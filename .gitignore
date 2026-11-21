@@ -1,0 +1,13 @@
+# Private working log - never commit
+JOURNAL.md
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# OS / editor
+.DS_Store
+.vscode/

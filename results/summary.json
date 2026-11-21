@@ -1,0 +1,271 @@
+{
+  "baseline": {
+    "facility_kwh": 24141.157908849225,
+    "it_kwh": 16248.577097797177,
+    "cooling_kwh": 6592.694643228278,
+    "chiller_kwh": 5455.2942463824465,
+    "water_l": 39066.96841952325,
+    "pue": 1.4857398136186366,
+    "wue_l_per_kwh": 2.4043316645135384,
+    "avg_supply_c": 18.0,
+    "avg_max_inlet_c": 22.470645974313847,
+    "peak_inlet_c": 29.939183250295006,
+    "peak_dimm_c": 85.48582082059771,
+    "exceed27_rack_min": 301,
+    "exceed32_rack_min": 0,
+    "dimm_throttle_server_min": 5,
+    "condensation_min": 710,
+    "dew_risk_min": 960,
+    "false_alarms": 0,
+    "free_cooling_hours": 0.0
+  },
+  "memsense": {
+    "facility_kwh": 23745.73634419086,
+    "it_kwh": 16248.48820631208,
+    "cooling_kwh": 6197.3690813738285,
+    "chiller_kwh": 5059.974906931951,
+    "water_l": 38355.23360383916,
+    "pue": 1.4614120429349426,
+    "wue_l_per_kwh": 2.360541677282889,
+    "avg_supply_c": 20.656597222225777,
+    "avg_max_inlet_c": 25.044633271078272,
+    "peak_inlet_c": 30.645114113965633,
+    "peak_dimm_c": 68.24890215746734,
+    "exceed27_rack_min": 66,
+    "exceed32_rack_min": 0,
+    "dimm_throttle_server_min": 0,
+    "condensation_min": 0,
+    "dew_risk_min": 0,
+    "false_alarms": 0,
+    "free_cooling_hours": 0.0
+  },
+  "savings": {
+    "facility_energy_pct": 1.637956083761081,
+    "cooling_energy_pct": 5.996418509395254,
+    "water_pct": 1.821832725900503,
+    "pue_delta": -0.02432777068369396,
+    "it_energy_change_pct": -0.0005470724270906238,
+    "week_kwh": 395.42156465836524,
+    "week_water_l": 711.734815684089
+  },
+  "annual_per_mw_it": {
+    "note": "Linear extrapolation of the simulated week to 1 MW IT load for 52 weeks. Indicative only.",
+    "energy_mwh": 213.16962606687687,
+    "cost_inr_lakh": 17.05357008535015,
+    "co2_tonnes": 151.35043450748256,
+    "water_kl": 383.6923882723428
+  },
+  "hall_avg_it_kw": 96.71772082022129,
+  "ablation_no_sensor_check": {
+    "facility_kwh": 23836.356271680335,
+    "it_kwh": 16248.466566979412,
+    "cooling_kwh": 6288.012379342579,
+    "chiller_kwh": 5150.619719653983,
+    "water_l": 38518.355315939974,
+    "pue": 1.4669911264193536,
+    "wue_l_per_kwh": 2.370584027554825,
+    "avg_supply_c": 20.06686507936508,
+    "avg_max_inlet_c": 24.455176303078304,
+    "peak_inlet_c": 30.645114113965633,
+    "peak_dimm_c": 68.24890215746734,
+    "exceed27_rack_min": 66,
+    "exceed32_rack_min": 0,
+    "dimm_throttle_server_min": 0,
+    "condensation_min": 0,
+    "dew_risk_min": 0,
+    "false_alarms": 0,
+    "free_cooling_hours": 0.0
+  },
+  "fault_detection": {
+    "baseline": [
+      {
+        "kind": "airflow",
+        "rack": 7,
+        "server": 8,
+        "detect_delay_min": 1861.0,
+        "note": "BMC DIMM critical alarm"
+      },
+      {
+        "kind": "breach",
+        "rack": 12,
+        "server": -1,
+        "detect_delay_min": 120.0,
+        "note": "found on manual round"
+      },
+      {
+        "kind": "leak",
+        "rack": 18,
+        "server": -1,
+        "detect_delay_min": 110.0,
+        "note": "found on manual round"
+      },
+      {
+        "kind": "drift",
+        "rack": 5,
+        "server": -1,
+        "detect_delay_min": NaN,
+        "note": "not detected"
+      }
+    ],
+    "memsense": [
+      {
+        "kind": "airflow",
+        "rack": 7,
+        "server": 8,
+        "detect_delay_min": 165.0,
+        "note": "AHI 1.35 > 1.3"
+      },
+      {
+        "kind": "breach",
+        "rack": 12,
+        "server": -1,
+        "detect_delay_min": 2.0,
+        "note": "row 1 aisle dP 2.4 Pa; rack gradient +5.7 C vs normal"
+      },
+      {
+        "kind": "leak",
+        "rack": 18,
+        "server": -1,
+        "detect_delay_min": 0.0,
+        "note": "leak rope triggered"
+      },
+      {
+        "kind": "drift",
+        "rack": 5,
+        "server": -1,
+        "detect_delay_min": 90.0,
+        "note": "node sensor disagrees with server BMC inlets"
+      }
+    ],
+    "memsense_no_sensor_check": [
+      {
+        "kind": "airflow",
+        "rack": 7,
+        "server": 8,
+        "detect_delay_min": 165.0,
+        "note": "AHI 1.35 > 1.3"
+      },
+      {
+        "kind": "breach",
+        "rack": 12,
+        "server": -1,
+        "detect_delay_min": 2.0,
+        "note": "row 1 aisle dP 2.4 Pa; rack gradient +5.7 C vs normal"
+      },
+      {
+        "kind": "leak",
+        "rack": 18,
+        "server": -1,
+        "detect_delay_min": 0.0,
+        "note": "leak rope triggered"
+      },
+      {
+        "kind": "drift",
+        "rack": 5,
+        "server": -1,
+        "detect_delay_min": NaN,
+        "note": "not detected"
+      }
+    ]
+  },
+  "forecaster": {
+    "mae": 0.12357898756477348,
+    "mae_naive": 0.19380464952043053,
+    "mae_transient": 0.1988517024287909,
+    "mae_transient_naive": 0.7578637740322263
+  },
+  "memsense_with_fixes": {
+    "facility_kwh": 23659.261120547217,
+    "it_kwh": 16248.49453492863,
+    "cooling_kwh": 6110.887022824176,
+    "chiller_kwh": 4973.492405379141,
+    "water_l": 38199.576492554064,
+    "pue": 1.4560894284506178,
+    "wue_l_per_kwh": 2.3509609712111,
+    "avg_supply_c": 21.274454365079364,
+    "avg_max_inlet_c": 24.973096308128635,
+    "peak_inlet_c": 30.90183795868789,
+    "peak_dimm_c": 68.2748327326603,
+    "exceed27_rack_min": 66,
+    "exceed32_rack_min": 0,
+    "dimm_throttle_server_min": 0,
+    "condensation_min": 0,
+    "dew_risk_min": 0,
+    "false_alarms": 0,
+    "free_cooling_hours": 0.0,
+    "fixed_racks": [
+      19,
+      0,
+      13,
+      9
+    ],
+    "facility_energy_saving_pct": 1.9961626949358702,
+    "water_saving_pct": 2.220269353011058
+  },
+  "hotspot_share": {
+    "R19": 0.9922619047619048,
+    "R0": 0.004067460317460318,
+    "R13": 0.003273809523809524,
+    "R9": 0.0001984126984126984,
+    "R16": 0.0001984126984126984
+  },
+  "delhi_jan": {
+    "baseline": {
+      "facility_kwh": 22709.610539483518,
+      "it_kwh": 16248.577097797177,
+      "cooling_kwh": 5161.147273862578,
+      "chiller_kwh": 4023.746877016729,
+      "water_l": 35338.62381702598,
+      "pue": 1.3976368763122196,
+      "wue_l_per_kwh": 2.174874981626351,
+      "avg_supply_c": 18.0,
+      "avg_max_inlet_c": 22.470645974313847,
+      "peak_inlet_c": 29.939183250295006,
+      "peak_dimm_c": 85.48582082059771,
+      "exceed27_rack_min": 301,
+      "exceed32_rack_min": 0,
+      "dimm_throttle_server_min": 5,
+      "condensation_min": 459,
+      "dew_risk_min": 616,
+      "false_alarms": 0,
+      "free_cooling_hours": 34.03533350033913
+    },
+    "memsense": {
+      "facility_kwh": 21513.081818577382,
+      "it_kwh": 16248.48820631208,
+      "cooling_kwh": 3964.714555760202,
+      "chiller_kwh": 2827.320381318362,
+      "water_l": 27638.955030817342,
+      "pue": 1.3240051348420314,
+      "wue_l_per_kwh": 1.701017022622473,
+      "avg_supply_c": 20.656597222225777,
+      "avg_max_inlet_c": 25.044633271078272,
+      "peak_inlet_c": 30.645114113965633,
+      "peak_dimm_c": 68.24890215746734,
+      "exceed27_rack_min": 66,
+      "exceed32_rack_min": 0,
+      "dimm_throttle_server_min": 0,
+      "condensation_min": 0,
+      "dew_risk_min": 0,
+      "false_alarms": 0,
+      "free_cooling_hours": 75.44910570445161
+    },
+    "savings": {
+      "facility_energy_pct": 5.2688209638197865,
+      "cooling_energy_pct": 23.181526405212836,
+      "water_pct": 21.78825306292481,
+      "pue_delta": -0.07363174147018814,
+      "it_energy_change_pct": -0.0005470724270906238,
+      "week_kwh": 1196.5287209061353,
+      "week_water_l": 7699.66878620864
+    },
+    "annual_per_mw_it": {
+      "note": "Linear extrapolation of the simulated week to 1 MW IT load for 52 weeks. Indicative only.",
+      "energy_mwh": 645.0421595853229,
+      "cost_inr_lakh": 51.603372766825835,
+      "co2_tonnes": 457.9799333055793,
+      "water_kl": 4150.849783352039
+    },
+    "hall_avg_it_kw": 96.71772082022129
+  }
+}

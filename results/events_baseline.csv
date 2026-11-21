@@ -1,0 +1,5 @@
+minute,kind,rack,server,detected_at,repaired_at,detect_delay_min,note
+1980,airflow,7,8,3841,3901,1861.0,BMC DIMM critical alarm
+3720,breach,12,-1,3840,3870,120.0,found on manual round
+5890,leak,18,-1,6000,6020,110.0,found on manual round
+7680,drift,5,-1,-1,-1,,not detected
