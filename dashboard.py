@@ -64,7 +64,7 @@ with tabs[0]:
 with tabs[1]:
     st.subheader("Rack 7 / server 8 — airflow slowly clogs (BMC fan alarms stay silent)")
     st.line_chart(pd.DataFrame({"day": b["day"], "Baseline DIMM": b["watch_dimm"], "MemSense DIMM": m["watch_dimm"],
-                                "Throttle limit": 85.0}).set_index("day"), color=[ORANGE, BLUE, GREY], y_label="°C")
+                                "85 °C (2× refresh)": 85.0}).set_index("day"), color=[ORANGE, BLUE, GREY], y_label="°C")
     st.subheader("Airflow Health Index (MemSense)")
     st.line_chart(pd.DataFrame({"day": m["day"], "AHI": m["watch_ahi"], "Alert threshold": 1.3}).set_index("day"),
                   color=[BLUE, GREY])
@@ -82,18 +82,22 @@ with tabs[2]:
         rows.append({"Fault": label, "Baseline": fmt(eb.detect_delay_min), "How (baseline)": eb.note,
                      "MemSense": fmt(em.detect_delay_min), "How (MemSense)": em.note})
     st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
-    st.caption(f"MemSense false alarms in the week: {S['memsense']['false_alarms']}.  "
+    st.caption("Each row is a single simulated event. Leak and breach detection come from the leak rope and the aisle "
+               "pressure sensor, not the AI. The baseline airflow alarm is a BMC critical-only alarm at 85 °C.  "
+               f"MemSense false alarms in the week: {S['memsense']['false_alarms']}.  "
                f"Without the sensor self-check, the drifting sensor costs "
                f"{S['ablation_no_sensor_check']['cooling_kwh'] - S['memsense']['cooling_kwh']:+.0f} kWh of cooling.")
 
 with tabs[3]:
     d = (b["day"] >= 2.8) & (b["day"] <= 4.3)
     st.line_chart(pd.DataFrame({"day": b["day"][d], "Room dew point": b["td_room"][d],
-                                "Baseline coil": b["rdhx_water"][d] + 0.5,
+                                "Baseline coil (fixed 15 °C water)": b["rdhx_water"][d] + 0.5,
                                 "MemSense coil": m["rdhx_water"][d] + 0.5}).set_index("day"),
                   color=[ORANGE, BLUE, GREY], y_label="°C")
     st.caption("When the coil surface is colder than the dew point, water condenses on the rear-door heat exchanger. "
-               "MemSense keeps the coil at least 2.5 °C above the measured dew point.")
+               "MemSense keeps the coil at least 2.5 °C above the measured dew point. The baseline here has fixed 15 °C water and "
+               "no dew-point control; commercial CDUs already avoid condensation, so this shows the size of the risk. "
+               "What MemSense adds is a measured coil/pipe temperature and a room dew point shared across racks.")
 
 with tabs[4]:
     which = st.radio("Run", ["baseline", "memsense"], horizontal=True)

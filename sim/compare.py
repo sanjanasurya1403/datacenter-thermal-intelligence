@@ -44,7 +44,7 @@ def kpis(r):
         "avg_supply_c": float(ts["t_sup"].mean()), "avg_max_inlet_c": float(ts["max_inlet"].mean()),
         "peak_inlet_c": float(ts["max_inlet"].max()), "peak_dimm_c": float(ts["max_dimm"].max()),
         "exceed27_rack_min": a["exceed27_rack_min"], "exceed32_rack_min": a["exceed32_rack_min"],
-        "dimm_throttle_server_min": a["dimm_throttle_server_min"],
+        "dimm_over85_server_min": a["dimm_over85_server_min"],
         "condensation_min": a["condensation_min"], "dew_risk_min": a["dew_risk_min"],
         "false_alarms": int(len(r["false_alarms"])),
         "free_cooling_hours": float(ts["free_frac"].sum() / 60.0),

@@ -67,8 +67,8 @@ Neither sensor type alone is enough. **Fusing them is the innovation.**
 - Polling period 10–30 s; each reading is a few bytes, so the network load is negligible.
 
 ### Two new metrics MemSense derives (the "memory insight")
-1. **Memory Thermal Margin (MTM)** = DRAM throttle/2×-refresh threshold − hottest DIMM sensor.
-   This shows how close each server is to losing memory performance. **[VERIFY: JEDEC threshold, commonly 85 °C]**
+1. **Memory Thermal Margin (MTM)** = 85 °C (DDR5 2× refresh threshold) − hottest DIMM sensor.
+   This shows how close each server is to losing memory bandwidth to extra refresh. Source: DDR5 refresh window is 32 ms up to 85 °C and 16 ms from 85 to 95 °C ([Micron 16Gb DDR5 SDRAM datasheet](https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/7969/16gb-ddr5-sdram-dierevd.pdf)). Throttling is a separate server-firmware policy.
 2. **Airflow Health Index (AHI)** = measured (T_DIMM − T_inlet), corrected for fan speed ÷ the rise expected at this server's current load (learned on healthy servers). 1.0 = healthy; MemSense alerts above 1.3 for 10 minutes.
    This is the *thermal resistance* from intake air to memory. If it rises while load is constant, airflow has degraded: a blocked filter, failed fan, missing blanking panel or recirculation.
    **It detects airflow faults inside the chassis with no extra sensor.** This is the core idea.
@@ -128,7 +128,7 @@ flowchart TB
 | Difficulty | Design response |
 |---|---|
 | **Hot-air recirculation and stratification** (top of rack hotter) | Two inlet sensors (top and bottom) per rack + memory sensors at every server height = a vertical temperature profile |
-| **Condensation on liquid-cooling pipes** | Firmware computes the room dew point from T/RH and compares it with the PT1000 pipe-surface temperature. **Dew-point margin = T_pipe − T_dew.** Below 2 °C → alarm and advise the CDU to raise supply water temperature. This links directly to Vertiv's guidance that CDU water temperature must avoid condensation. |
+| **Condensation on liquid-cooling pipes** | Firmware computes the room dew point from T/RH and compares it with the PT1000 pipe-surface temperature. **Dew-point margin = T_pipe − T_dew.** Below 2 °C → alarm and advise the CDU to raise supply water temperature. Commercial CDUs (e.g. Vertiv) already control water temperature to avoid condensation; what MemSense adds is a *measured* coil/pipe surface temperature and a room dew point shared across racks, instead of a fixed setpoint offset. |
 | **Too dry → static discharge (ESD)** | Alarm when the dew point falls below the ASHRAE lower bound (≈5.5 °C dew point) |
 | **Corrosive gases** (sulphur and chlorine in Indian cities) | Ag/Cu coupons trend toward the ISA-71.04 class: G1 = OK, G2+ = check filtration |
 | **Dust** | SPS30 trends; flags filter replacement before fans struggle (cross-checked with AHI) |
@@ -184,7 +184,7 @@ Safety principles (to earn operator trust):
 | More free-cooling hours | A higher setpoint means outdoor air/water is "cold enough" more often |
 | Higher chilled-water temperature | Less evaporative tower load means **less water (lower WUE)** |
 | Targeted fixes instead of overcooling the whole room | One bad rack no longer forces the whole hall colder |
-| Memory kept below the throttle/refresh threshold | Less refresh overhead and throttling = **more useful compute per watt** |
+| Memory kept below 85 °C (2× refresh threshold) | Less refresh overhead = **more useful compute per watt** |
 
 ## 6. Integration with existing infrastructure
 - **Cooling equipment:** standard **BACnet/IP** and **Modbus TCP** setpoint writes, so it works with Vertiv (Liebert CRAH/CDU), Schneider, Stulz and others. Vendor-neutral, with no rip-and-replace.
@@ -201,7 +201,7 @@ Safety principles (to earn operator trust):
 ## 8. Fit with the SOLVE focus areas
 | SOLVE area | MemSense contribution |
 |---|---|
-| **#1 Semiconductors** | Repurposes on-DIMM/SSD temperature sensors; protects DRAM from thermal throttling; corrosion monitoring protects electronics; Micron flash in the node |
+| **#1 Semiconductors** | Repurposes on-DIMM/SSD temperature sensors; keeps DRAM out of the 85 °C 2× refresh region; corrosion monitoring protects electronics; Micron flash in the node |
 | **#2 IoT & Connected Intelligent Systems** | PoE sensor network + BMC telemetry fusion, secure edge architecture |
 | **#6 AI Applications** | Hotspot forecasting, airflow anomaly detection, safe closed-loop control |
 

@@ -37,7 +37,7 @@ AIRFLOW_HEALTH_EXP = 0.8          # DIMM rise scales with 1 / health^0.8
 FAN_SPEED_EXP = 0.6               # DIMM rise scales with 1 / speed^0.6
 TAU_DIMM_MIN = 5.0                # DIMM thermal time constant
 SSD_BASE_RISE_C, SSD_LOAD_RISE_C = 12.0, 15.0
-DRAM_THROTTLE_C = 85.0            # DDR5 extended-refresh / throttle region [VERIFY JEDEC]
+DRAM_2X_REFRESH_C = 85.0          # above this DDR5 must refresh 2x as often (32 ms window up to 85 degC, 16 ms 85-95 degC; Micron 16Gb DDR5 datasheet). Throttling is a separate server-firmware policy.
 MTM_GUARD_C = 10.0                # MemSense keeps >= 10 degC Memory Thermal Margin
 
 # ---------------------------------------------------------------- air distribution

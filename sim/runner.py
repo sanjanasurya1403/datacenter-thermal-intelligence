@@ -75,7 +75,7 @@ def run_week(controller, faults, climate="bengaluru_nov", seed=0, weather=None, 
     ahi_rise, ahi_u, ahi_hd = [], [], []
     fb = FeatureBuilder(hd_rack) if collect_training else None
     acc = dict(it_kwh=0.0, cooling_kwh=0.0, chiller_kwh=0.0, facility_kwh=0.0, water_l=0.0,
-               exceed27_rack_min=0, exceed32_rack_min=0, dimm_throttle_server_min=0,
+               exceed27_rack_min=0, exceed32_rack_min=0, dimm_over85_server_min=0,
                condensation_min=0, dew_risk_min=0)
 
     for k in range(C.STEPS):
@@ -108,7 +108,7 @@ def run_week(controller, faults, climate="bengaluru_nov", seed=0, weather=None, 
         rack_max = truth["t_in"].max(axis=1)
         acc["exceed27_rack_min"] += int((rack_max > C.ASHRAE_REC_MAX_C).sum())
         acc["exceed32_rack_min"] += int((rack_max > C.ASHRAE_ALLOW_MAX_C).sum())
-        acc["dimm_throttle_server_min"] += int((truth["t_dimm"] >= C.DRAM_THROTTLE_C).sum())
+        acc["dimm_over85_server_min"] += int((truth["t_dimm"] >= C.DRAM_2X_REFRESH_C).sum())
         coil = rdhx_water + 0.5
         acc["condensation_min"] += int(coil <= truth["td_room"])
         acc["dew_risk_min"] += int(coil < truth["td_room"] + 2.0)

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MemSense: Idea Brief and Roadmap</title>
+<style>
+  @page { size: A4; margin: 20mm 20mm 18mm 20mm; }
+  body { font-family: "Times New Roman", Times, serif; font-size: 12pt; line-height: 1.4; color: #111; margin: 0; }
+  h1 { font-size: 22pt; color: #b0306a; margin: 0 0 2px; text-align: center; }
+  .subtitle { text-align: center; font-size: 13pt; font-style: italic; margin: 0 0 10px; }
+  .meta { text-align: center; font-size: 11pt; margin: 0 0 6px; }
+  hr { border: none; border-top: 1.5px solid #b0306a; margin: 10px 0 12px; }
+  h2 { font-size: 14pt; color: #b0306a; margin: 16px 0 6px; }
+  h2, h3 { break-after: avoid; }
+  h3 { font-size: 12pt; color: #b0306a; margin: 10px 0 4px; }
+  p { margin: 0 0 8px; text-align: justify; }
+  ul, ol { margin: 0 0 8px; padding-left: 22px; }
+  li { margin-bottom: 3px; text-align: justify; }
+  table { width: 100%; border-collapse: collapse; margin: 6px 0 10px; font-size: 11pt; }
+  th, td { border: 1px solid #999; padding: 4px 7px; text-align: left; vertical-align: top; }
+  th { background: #fbe9f1; color: #b0306a; }
+  td.num, th.num { text-align: right; white-space: nowrap; }
+  figure { margin: 4px 0 6px; text-align: center; break-inside: avoid; }
+  figure img { max-width: 85%; max-height: 58mm; }
+  figcaption { font-size: 10.5pt; font-style: italic; margin-top: 3px; }
+  .note { font-size: 10.5pt; font-style: italic; }
+  .page-break { break-before: page; }
+  .avoid { break-inside: avoid; }
+  a { color: #111; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<h1>MemSense</h1>
+<p class="subtitle">Memory-Aware Thermal Intelligence for Sustainable Data Centres</p>
+<p class="meta">Bachina Baby Sanjana Surya · B.E. Electronics &amp; Communication Engineering · BITS Pilani, Hyderabad Campus</p>
+<p class="meta">Micron-Supported SOLVE Innovation Program 2026 · Area: IoT and Connected Intelligent Systems</p>
+<p class="meta">Code and results: github.com/sanjanasurya1403/datacenter-thermal-intelligence</p>
+<hr>
+
+<h2>1. The Problem</h2>
+<p>Data centres use about 30–40% of their electricity just for cooling, and in India they also use 1.5–2.5 litres of water for every kWh. A large part of this is wasted because rooms are kept much colder than they need to be. ASHRAE allows server inlet air up to 27 °C, but most operators run their rooms at 18–22 °C. They do this because a hall usually has only a few temperature sensors on the walls, so hotspots between racks are not seen until it is too late.</p>
+<p>This problem is growing. India's data-centre capacity is expected to rise from about 1.5–2 GW in 2025 to somewhere between 3 and 12 GW by 2030. New AI servers also use liquid cooling, which brings new risks such as condensation and leaks, and humid, polluted air in Indian cities can corrode electronics.</p>
+
+<h2>2. My Idea</h2>
+<p>I noticed that servers already contain a sensor network that almost nobody uses: every DDR5 server memory module (RDIMM) already has three built-in temperature sensors, and every NVMe SSD reports its own temperature. A full rack of 40 servers with 16 memory modules each has around 2,000 of these sensors, placed right where the heat is, but today they are only used to control each server's own fans.</p>
+<p><b>MemSense uses these existing memory sensors as a room-wide temperature network.</b> It has three parts:</p>
+<ol>
+  <li><b>Memory as a sensor.</b> Temperatures are read from the memory and SSDs through each server's management controller. No new hardware and no software on the servers is needed.</li>
+  <li><b>A low-cost sensor node.</b> A small board (ESP32-S3 with Micron industrial flash, about ₹4,500 per rack) measures what memory cannot: humidity, dew point, air pressure between aisles, dust, corrosive gas, coolant leaks and pipe temperature.</li>
+  <li><b>An edge AI gateway.</b> It predicts hotspots 10 minutes ahead, checks that sensors are not drifting, prevents condensation, and slowly adjusts the cooling setpoint within safe limits. It works with any cooling system.</li>
+</ol>
+<p>I also defined two new measures. The <b>Airflow Health Index</b> detects blocked airflow inside a server using only its memory temperature, and the <b>Memory Thermal Margin</b> shows how close each server's memory is to 85 °C, above which DDR5 must refresh twice as often and loses bandwidth.</p>
+<p>Safety comes first: the system warms the room slowly but cools it immediately, it starts in advice-only mode, and the cooling units go back to their normal settings if MemSense stops working.</p>
+
+<h2 class="page-break">3. What I Have Done So Far</h2>
+<p>I researched the problem, designed the sensor node on paper (parts list, block diagram and security), and built a working simulation in Python of a 20-rack data hall over one week. Both the normal setup and MemSense were given exactly the same weather, workload and faults so that the comparison is fair.</p>
+<div class="avoid">
+<table>
+  <tr><th>Result</th><th class="num">Normal setup</th><th class="num">With MemSense</th></tr>
+  <tr><td>Cooling energy (Bengaluru, November)</td><td class="num">6,593 kWh</td><td class="num">6,197 kWh (6% less)</td></tr>
+  <tr><td>Cooling energy and water (Delhi, January)</td><td class="num">–</td><td class="num">23% and 22% less</td></tr>
+  <tr><td>Time racks spent above 27 °C</td><td class="num">301 rack-min</td><td class="num">66 rack-min</td></tr>
+  <tr><td>Condensation on a humid day*</td><td class="num">710 min</td><td class="num">0 min</td></tr>
+  <tr><td>Slowly clogging server flagged after (by the Airflow Health Index)</td><td class="num">31 hours</td><td class="num">2.8 hours</td></tr>
+  <tr><td>Coolant leak found after (by the leak rope sensor)</td><td class="num">110 min</td><td class="num">under 1 min</td></tr>
+  <tr><td>False alarms</td><td class="num">0</td><td class="num">0</td></tr>
+</table>
+</div>
+<figure>
+  <img src="../../results/figures/01_setpoint_and_inlet.png" alt="Cooling setpoint and hottest rack inlet over one week">
+  <figcaption>Figure 1. MemSense safely runs the cooling warmer while keeping racks within the safe limit.</figcaption>
+</figure>
+<figure>
+  <img src="../../results/figures/03_airflow_fault_ahi.png" alt="Airflow Health Index detecting a clogged server">
+  <figcaption>Figure 2. In a simulated slow-clogging event, the Airflow Health Index flagged the server 2.8 hours after onset, long before its memory approached 85 °C. A critical-only BMC alarm needed 31 hours.</figcaption>
+</figure>
+<p class="note">*The normal setup here uses fixed 15 °C water with no dew-point control. Commercial cooling units already control water temperature to avoid condensation, so this shows the size of the risk. What is new in MemSense is that it measures the actual pipe temperature and shares one room dew point across all racks.</p>
+<p class="note">In Bengaluru there are no free-cooling hours, so the saving comes from the assumed chiller efficiency gain per °C. Across the 2–5% per °C range in the literature, the cooling saving is 4.1–9.5% (6% at the 3% I used). Detection results are single simulated events: the normal setup only raises an alarm when memory reaches 85 °C.</p>
+<p class="note">These results come from a simplified simulation, not a real building, and the hardware has not been built yet. Testing on real equipment is the next step.</p>
+
+<h2>4. Who Will Benefit</h2>
+<ul>
+  <li><b>Data-centre operators</b> save on electricity and water and get early warning of faults. For every 1 MW of servers, the modelled saving is about ₹17 lakh per year in Bengaluru, and more in cooler cities.</li>
+  <li><b>Micron</b> gains a new reason for customers to value its memory, since the memory becomes part of the cooling system. The same sensor node can also monitor Micron's own cleanrooms and test floors.</li>
+  <li><b>The environment</b> benefits from lower energy use, CO₂ emissions, water use and e-waste.</li>
+</ul>
+
+<h2>5. Business Model</h2>
+<p>I plan to sell MemSense as <b>hardware plus a yearly software subscription per rack</b>. For larger sites, a savings-share option would let the customer pay from the money they save. The first customers would be company (enterprise), campus and hyperscale data centres in India, where one organisation owns both the building and the servers. In colocation data centres the operator does not own the tenants' servers, so reading their memory sensors needs tenant consent; there the sensor nodes and AI can still be used on their own. Later markets are AI halls with liquid cooling, small edge server rooms and semiconductor facilities.</p>
+<table class="avoid">
+  <tr><th>For every 1 MW of servers (estimate)</th><th class="num">Amount</th></tr>
+  <tr><td>Hardware cost (about 120 rack nodes, 12 row nodes and a gateway)</td><td class="num">≈ ₹8 lakh</td></tr>
+  <tr><td>Modelled saving per year (Bengaluru)</td><td class="num">≈ ₹17 lakh</td></tr>
+  <tr><td>Payback time</td><td class="num">under 1 year</td></tr>
+</table>
+<p>Existing monitoring products add their own room sensors or only work with one cooling brand. MemSense is different because it uses sensors that are already inside every server, works with any cooling system and is designed for Indian conditions. I plan to file a provisional patent on the Airflow Health Index and the memory-based sensing method.</p>
+
+<div class="avoid">
+<h2>6. Roadmap for Venture Creation</h2>
+<table>
+  <tr><th style="width:22%">Stage</th><th>What I will do</th></tr>
+  <tr><td><b>Year 1</b><br>(with SOLVE)</td><td>Build 5 rack nodes and 1 row node, test them with real DDR5 memory, and run a pilot in a BITS campus server room. File a provisional patent and present the results to Micron.</td></tr>
+  <tr><td><b>Year 2</b></td><td>Run pilots at a Micron facility and 2–3 outside data centres. Register the company, join the BITS incubator, apply for startup grants and get the first paying customers.</td></tr>
+  <tr><td><b>Year 3</b></td><td>Launch a certified product, partner with cooling companies and system integrators, and raise seed funding.</td></tr>
+  <tr><td><b>Beyond</b></td><td>Expand across India and then to other hot, humid regions such as Southeast Asia and the Middle East, and extend MemSense to AI data centres and cleanrooms.</td></tr>
+</table>
+</div>
+
+<h3>Main challenges and how I will handle them</h3>
+<ul>
+  <li><b>Different server brands share memory data differently:</b> I will survey vendors early and use backup methods where needed.</li>
+  <li><b>Operators may not trust automatic control:</b> MemSense starts in advice-only mode, with strict limits and automatic fallback.</li>
+  <li><b>Simulation may not match reality:</b> I will calibrate everything on real pilot data before any automatic control.</li>
+  <li><b>Colocation operators do not own their tenants' servers:</b> I will start with enterprise, campus and hyperscale halls, and ask tenants for consent in colocation.</li>
+  <li><b>Network security:</b> the nodes are wired, on a separate network, with encrypted connections and signed firmware.</li>
+</ul>
+
+<h2>7. Support I Need from SOLVE</h2>
+<ul>
+  <li>Funding of about ₹2.2 lakh for the prototype and campus pilot (about ₹1.45 lakh if campus DDR5 servers are available).</li>
+  <li>Mentorship from Micron on DDR5 memory temperature sensors and industrial flash, and access to DDR5 hardware.</li>
+  <li>Permission to pilot in a campus server room, and an introduction to a Micron facility.</li>
+  <li>Help with incubation, patent filing and meeting data-centre operators.</li>
+</ul>
+
+<p class="note" style="margin-top:12px">Sources: cooling, water and temperature figures are referenced in docs/01_research_notes.md of the repository. India capacity forecasts are from Wood Mackenzie, Rubix Data Sciences, Avendus Capital and Axis Capital (2025–26).</p>
+
+</body>
+</html>

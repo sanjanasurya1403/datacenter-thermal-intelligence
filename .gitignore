@@ -11,3 +11,6 @@ venv/
 # OS / editor
 .DS_Store
 .vscode/
+
+# Personal application answers (contain student ID)
+docs/04_application_form_answers.md

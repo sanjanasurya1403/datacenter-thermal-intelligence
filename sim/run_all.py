@@ -87,7 +87,7 @@ def figures(res, fixed_ts, summary):
     sb, sm = summary["baseline"], summary["memsense"]
     items = [("Cooling energy (kWh / week)", "cooling_kwh"), ("PUE", "pue"),
              ("Water (litres / week)", "water_l"), ("Inlet > 27 °C (rack-minutes)", "exceed27_rack_min"),
-             ("DRAM at throttle limit (server-min)", "dimm_throttle_server_min"),
+             ("DRAM above 85 °C, 2× refresh (server-min)", "dimm_over85_server_min"),
              ("RDHx condensation (minutes)", "condensation_min")]
     fig, axes = plt.subplots(2, 3, figsize=(11, 5.5))
     for ax, (label, key) in zip(axes.flat, items):
@@ -114,15 +114,15 @@ def figures(res, fixed_ts, summary):
     sl_b, sl_m = b.iloc[lo:hi], m.iloc[lo:hi]
     ax.plot(days(sl_b), sl_b["watch_dimm"], color=ORANGE, lw=1.5, label="Baseline")
     ax.plot(days(sl_m), sl_m["watch_dimm"], color=BLUE, lw=1.5, label="MemSense")
-    ax.axhline(C.DRAM_THROTTLE_C, color=MUTED, ls="--", lw=1)
-    ax.text(days(sl_b).iloc[-1], C.DRAM_THROTTLE_C + 0.8, "DRAM throttle / extended-refresh region", color=MUTED,
+    ax.axhline(C.DRAM_2X_REFRESH_C, color=MUTED, ls="--", lw=1)
+    ax.text(days(sl_b).iloc[-1], C.DRAM_2X_REFRESH_C + 0.8, "85 °C: DDR5 2× refresh region", color=MUTED,
             fontsize=8, ha="right")
-    for ev, col, name in ((ev_b, ORANGE, "Baseline detects"), (ev_m, BLUE, "MemSense detects")):
+    for ev, col, name in ((ev_b, ORANGE, "BMC critical-only alarm"), (ev_m, BLUE, "AHI alert")):
         if ev.detected_at >= 0:
             ax.axvline(ev.detected_at / 1440, color=col, lw=1, ls=":")
             ax.text(ev.detected_at / 1440 + 0.01, 50, f"{name}\n+{ev.detect_delay_min / 60:.1f} h", color=INK, fontsize=8)
     style(ax, "Rack 7 / server 8: clogged airflow, hottest DIMM temperature", "°C")
-    ax.legend(frameon=False, fontsize=9, loc="lower right")
+    ax.legend(frameon=False, fontsize=9, loc="upper left")
     ax = axes[1]
     ax.plot(days(sl_m), sl_m["watch_ahi"], color=BLUE, lw=1.5)
     ax.axhline(1.3, color=MUTED, ls="--", lw=1)
@@ -138,11 +138,12 @@ def figures(res, fixed_ts, summary):
     fig, ax = plt.subplots(figsize=(11, 4))
     sl_b, sl_m = b.iloc[lo:hi], m.iloc[lo:hi]
     ax.plot(days(sl_b), sl_b["td_room"], color=MUTED, lw=2, label="Room dew point")
-    ax.plot(days(sl_b), sl_b["rdhx_water"] + 0.5, color=ORANGE, lw=2, label="Baseline RDHx coil surface")
+    ax.plot(days(sl_b), sl_b["rdhx_water"] + 0.5, color=ORANGE, lw=2, label="Baseline coil surface (fixed 15 °C water, no dew-point control)")
     ax.plot(days(sl_m), sl_m["rdhx_water"] + 0.5, color=BLUE, lw=2, label="MemSense RDHx coil surface")
     ax.fill_between(days(sl_b), sl_b["rdhx_water"] + 0.5, sl_b["td_room"],
                     where=sl_b["td_room"] >= sl_b["rdhx_water"] + 0.5, color=ORANGE, alpha=0.15, label="Condensation on baseline coil")
-    style(ax, "Humid day: dew-point guard keeps rear-door heat exchangers dry", "°C")
+    style(ax, "Humid day: measured coil temperature vs shared room dew point", "°C")
+    ax.set_ylim(top=ax.get_ylim()[1] + 3)
     ax.legend(frameon=False, fontsize=9, loc="upper left", ncol=2)
     ax.set_xlabel("Day", color=MUTED, fontsize=9)
     fig.tight_layout()
@@ -171,14 +172,14 @@ def figures(res, fixed_ts, summary):
     sf = kpis({"acc": summary["_fixed_acc"], "ts": fixed_ts, "false_alarms": []})
     fig, ax = plt.subplots(figsize=(8, 4))
     names = ["Baseline", "MemSense", "MemSense +\nhotspot fixes"]
-    vals = [sb["facility_kwh"], sm["facility_kwh"], sf["facility_kwh"]]
+    kwh = [sb["facility_kwh"], sm["facility_kwh"], sf["facility_kwh"]]
+    vals = [100 * (kwh[0] - v) / kwh[0] for v in kwh]          # % saving vs baseline; axis starts at zero
     bars = ax.bar(names, vals, color=[ORANGE, BLUE, "#1c5cab"], width=0.55, edgecolor="#fcfcfb", linewidth=2)
-    for bar, v in zip(bars, vals):
-        pct = 100 * (vals[0] - v) / vals[0]
-        ax.text(bar.get_x() + bar.get_width() / 2, v, f"{v:,.0f} kWh" + (f"\n-{pct:.1f}%" if pct > 0 else ""),
+    for bar, v, e in zip(bars, vals, kwh):
+        ax.text(bar.get_x() + bar.get_width() / 2, v, f"{v:.1f}%\n({e:,.0f} kWh)",
                 ha="center", va="bottom", fontsize=9, color=INK)
-    ax.set_ylim(min(vals) * 0.9, max(vals) * 1.04)
-    style(ax, "Total facility energy, one week (axis starts above zero)", "kWh")
+    ax.set_ylim(0, max(vals) * 1.6)
+    style(ax, "Total facility energy saved vs baseline, one week (Bengaluru)", "% saved")
     fig.tight_layout()
     fig.savefig(FIG / "06_facility_energy_scenarios.png", dpi=160)
     plt.close(fig)

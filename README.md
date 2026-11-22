@@ -3,8 +3,8 @@
 **Micron-Supported SOLVE Innovation Program (BITS Pilani), 2026 submission**
 Focus areas: **#2 IoT & Connected Intelligent Systems**, **#6 AI Applications**, **#1 Semiconductor Technologies**
 
-> Every DDR5 server memory module already carries **three temperature sensors**, and every NVMe SSD reports its own temperature.
-> A single rack holds about **2,000** of these sensors, sitting exactly where the heat is, yet each one is only used to drive its own server's fans.
+> Every DDR5 RDIMM (server memory module) already carries **three temperature sensors**, and every NVMe SSD reports its own temperature.
+> A full rack of 40 dual-socket servers with 16 RDIMMs each holds about **2,000** of these sensors (the simulated hall below uses 10 servers per rack, about 500). They sit exactly where the heat is, yet each one is only used to drive its own server's fans.
 > **MemSense turns Micron memory into a room-wide thermal sensing network.** It adds a rugged low-cost sensor node for what memory cannot sense (humidity, dew point, dust, corrosive gas, airflow pressure, leaks) and edge AI that predicts hotspots.
 > Operators can then **run cooling warmer, safely, using less energy and water**.
 
@@ -26,7 +26,7 @@ Sources: [docs/01_research_notes.md](docs/01_research_notes.md)
 | **3. Edge AI** | 10-minute hotspot forecast, **Airflow Health Index**, sensor self-check, dew-point guard, safe bounded setpoint control (BACnet/Modbus to any cooling vendor) | Gateway per hall |
 
 **Two new metrics:**
-- **Memory Thermal Margin**: how far each server's DRAM is from its throttle / extended-refresh region.
+- **Memory Thermal Margin**: how far each server's DRAM is from 85 °C, above which DDR5 must refresh twice as often (32 ms refresh window up to 85 °C, 16 ms from 85 to 95 °C, per the Micron 16Gb DDR5 datasheet). Throttling is a separate server-firmware policy.
 - **Airflow Health Index (AHI)**: the DIMM-over-inlet temperature rise compared with the rise expected at the current load. It detects clogged or blocked airflow *inside* a server using only the memory's own sensors.
 
 Full design: [docs/02_system_design.md](docs/02_system_design.md)
@@ -44,20 +44,26 @@ A 20-rack, ~100 kW hall was simulated for one week. **Baseline and MemSense see 
 | PUE | 1.486 | 1.461 |
 | Water | 39,067 L | 38,355 L (−1.8%) |
 | Rack-minutes above 27 °C | 301 | 66 |
-| Server-minutes with DRAM at throttle limit | 5 | 0 |
-| Condensation on rear-door heat exchangers (humid day) | 710 min | **0 min** |
+| Server-minutes with DRAM above 85 °C (2× refresh) | 5 | 0 |
+| Condensation on rear-door heat exchangers (humid day)* | 710 min | 0 min |
 | False alarms | 0 | 0 |
+
+**Where the Bengaluru saving comes from:** no free-cooling hours occur in either Bengaluru run, so the saving comes from the assumed chiller COP gain per °C of warmer chilled water. Across the 2–5% per °C range in the literature, it is 4.1–9.5% of cooling energy (6.0% at the 3% used here).
+
+\*The baseline's rear-door water runs at a fixed 15 °C with no dew-point control. Commercial CDUs already control water temperature to avoid condensation (see [research notes](docs/01_research_notes.md)), so this number shows the size of the risk, not a gain over best practice. What MemSense adds is a *measured* coil/pipe surface temperature and a room dew point shared across racks, instead of a single setpoint margin.
 
 **Cooler climate (Delhi, January):** cooling energy **−23%**, water **−22%**, total energy −5.3%, PUE 1.398 → 1.324. Warmer setpoints unlock many more free-cooling hours.
 
 **Fault detection (time from fault start to alert):**
 
-| Fault | Baseline | MemSense |
+| Fault | Baseline | MemSense (what detected it) |
 |---|---|---|
-| Clogged airflow inside a server (fan alarms silent) | 31 h (when DIMM hit critical) | **2.8 h** (AHI) |
-| Containment breach (blanking panels removed) | 2 h (manual round) | **2 min** (aisle pressure + gradient) |
-| Coolant leak under rear-door heat exchanger | 1 h 50 min (manual round) | **< 1 min** (leak rope) |
+| Slowly clogging airflow inside a server (fan alarms silent) | 31 h (BMC critical-only alarm at 85 °C) | 2.8 h (Airflow Health Index) |
+| Containment breach (blanking panels removed) | 2 h (manual round) | 2 min (aisle pressure sensor; rack located by temperature gradient) |
+| Coolant leak under rear-door heat exchanger | 1 h 50 min (manual round) | < 1 min (leak rope) |
 | Node sensor drifting | never | 1.5 h (cross-check with server BMCs) |
+
+These are single simulated events, not statistics. In the slow-clogging event, AHI flagged the server 2.8 h after onset, long before its DRAM approached 85 °C; a BMC critical-only alarm needed 31 h. The leak and breach results come from the leak rope and the aisle pressure sensor, not from the AI; any facility that installs those sensors gets the same benefit.
 
 **Hotspot forecaster** (10 min ahead, held-out data): mean error 0.12 °C vs 0.19 °C for a naive "no change" guess. During temperature transients it is **0.20 °C vs 0.76 °C**.
 
@@ -108,3 +114,8 @@ results/                     summary.json, CSVs, figures
 - **Hardware is a paper design.** Prices are rough estimates; some part numbers and thresholds are marked **[VERIFY]** in the docs.
 - Savings depend strongly on climate and on the worst rack in the room. Bengaluru gains are modest; cooler climates and hotspot remediation gain more.
 - Annual figures are linear extrapolations of one week.
+- **Who owns the servers matters.** In a colocation data centre the operator does not own the tenants' servers and cannot read their BMCs, so Layer 1 (memory as a sensor) needs tenant consent there. MemSense therefore targets enterprise, campus and hyperscale halls first, where one organisation owns both the building and the servers. In colocation, Layers 2 and 3 still work on their own.
+- The detection results are single simulated events, and the baseline uses simple practice (fixed setpoints, manual rounds, critical-only BMC alarms, no dew-point control), not a best-in-class facility.
+
+## License
+[MIT](LICENSE)

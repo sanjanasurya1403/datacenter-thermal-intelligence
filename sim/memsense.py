@@ -142,8 +142,8 @@ class BaselineController:
 
     def decide(self, minute, s):
         detections = []
-        # BMC raises a critical alarm only when a DIMM is already at the throttle limit for 5 min
-        self.hot = np.where(s["bmc_dimm"] >= C.DRAM_THROTTLE_C, self.hot + 1, 0)
+        # BMC raises a critical alarm only when a DIMM has been at/above 85 degC (2x-refresh region) for 5 min
+        self.hot = np.where(s["bmc_dimm"] >= C.DRAM_2X_REFRESH_C, self.hot + 1, 0)
         for r, h in zip(*np.nonzero(self.hot == 5)):
             detections.append(("airflow", int(r), int(h), "BMC DIMM critical alarm"))
         # manual walk-through every 4 h finds visible leaks
@@ -236,7 +236,7 @@ class MemSenseController:
         self.last_pred = pred
         limit = C.ASHRAE_REC_MAX_C - C.INLET_MARGIN_C
         healthy = ~self.ahi.flagged
-        mtm = C.DRAM_THROTTLE_C - np.where(healthy, s["bmc_dimm"], -np.inf).max()
+        mtm = C.DRAM_2X_REFRESH_C - np.where(healthy, s["bmc_dimm"], -np.inf).max()
         hall_pred, hall_now = pred.max(), m0.max()
         if (hall_pred > limit or hall_now > limit + 0.5 or mtm < C.MTM_GUARD_C) and \
                 minute - self.last_lower >= C.LOWER_HOLD_MIN:
